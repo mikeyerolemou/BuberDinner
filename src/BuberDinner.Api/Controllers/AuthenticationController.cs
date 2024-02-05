@@ -1,8 +1,6 @@
-﻿using BuberDinner.Contracts.Authentication;
-using BuberDinner.Application.Services.Authentication;
-using Microsoft.AspNetCore.Authentication;
+﻿using BuberDinner.Application.Services.Authentication;
+using BuberDinner.Contracts.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using IAuthenticationService = BuberDinner.Application.Services.Authentication.IAuthenticationService;
 
 namespace BuberDinner.Api.Controllers;
 
@@ -10,40 +8,49 @@ namespace BuberDinner.Api.Controllers;
 [Route("auth")]
 public class AuthenticationController : ControllerBase
 {
-    private readonly IAuthenticationService _authenticationService;
     private readonly ILogger<AuthenticationController> _logger;
+    private readonly IAuthenticationService _authenticationService;
 
-    public AuthenticationController(IAuthenticationService authenticationService, ILogger<AuthenticationController> logger)
+    public AuthenticationController(ILogger<AuthenticationController> logger,
+        IAuthenticationService authenticationService)
     {
-        _authenticationService = authenticationService;
         _logger = logger;
+        _authenticationService = authenticationService;
     }
 
-    [HttpPost("register")]
-    public IActionResult Register(RegisterRequest request)
+    [HttpPost("register", Name = "Register")]
+    public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var authResult = _authenticationService.Register(
-            request.FirstName,
-            request.LastName,
-            request.Email,
+        var result = _authenticationService.Register(
+            request.Firstname, 
+            request.Lastname, 
+            request.Email, 
             request.Password);
-
-        var response = new AuthenticationResponse(authResult.Id, authResult.FirstName, authResult.LastName,
-            authResult.Email, authResult.Token);
-
+        var response = new AuthenticationResponse(
+            result.Id,
+            result.FirstName,
+            result.LastName,
+            result.Email,
+            result.Token);
+        
         return Ok(response);
     }
 
-    [HttpPost("login")]
-    public IActionResult Login(LoginRequest request)
+    [HttpPost("login", Name = "Login")]
+    public async Task<IActionResult> Login(LoginRequest request)
     {
-        var authResult = _authenticationService.Login(
-            request.Email,
+        var result = _authenticationService.Login(
+            request.Email, 
             request.Password);
-
-        var response = new AuthenticationResponse(authResult.Id, authResult.FirstName, authResult.LastName,
-            authResult.Email, authResult.Token);
-
+        
+        var response = new AuthenticationResponse(
+            result.Id,
+            result.FirstName,
+            result.LastName,
+            result.Email,
+            result.Token);
+            
+        
         return Ok(response);
     }
 }
